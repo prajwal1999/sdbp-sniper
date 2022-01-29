@@ -34,6 +34,9 @@ DramCache::DramCache(MemoryManagerBase* memory_manager, ShmemPerfModel* shmem_pe
    UInt32 num_sets = k_KILO * cache_size / (associativity * m_cache_block_size);
    LOG_ASSERT_ERROR(k_KILO * cache_size == num_sets * associativity * m_cache_block_size, "Invalid cache configuration: size(%d Kb) != sets(%d) * associativity(%d) * block_size(%d)", cache_size, num_sets, associativity, m_cache_block_size);
 
+   // updated by prajwal
+   this->current_PC = memory_manager->current_PC;
+
    m_cache = new Cache("dram-cache",
       "perf_model/dram/cache",
       m_core_id,
@@ -44,7 +47,9 @@ DramCache::DramCache(MemoryManagerBase* memory_manager, ShmemPerfModel* shmem_pe
       CacheBase::PR_L1_CACHE,
       CacheBase::parseAddressHash(Sim()->getCfg()->getStringArray("perf_model/dram/cache/address_hash", m_core_id)),
       NULL, /* FaultinjectionManager */
-      home_lookup
+      home_lookup,
+      // updated by prajwal
+      this->current_PC
    );
 
    if (Sim()->getCfg()->getBool("perf_model/dram/cache/queue_model/enabled"))

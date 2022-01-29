@@ -12,6 +12,9 @@
 #include "core.h"
 #include "fault_injection.h"
 
+// updated by prajwal
+#include "SDBP/sdb_predictor.h"
+
 // Define to enable the set usage histogram
 //#define ENABLE_SET_USAGE_HIST
 
@@ -35,6 +38,10 @@ class Cache : public CacheBase
       UInt64* m_set_usage_hist;
       #endif
 
+      // updated by prajwal
+      sampler *samp;
+      int current_PC;
+
    public:
 
       // constructors/destructors
@@ -47,7 +54,9 @@ class Cache : public CacheBase
             cache_t cache_type,
             hash_t hash = CacheBase::HASH_MASK,
             FaultInjector *fault_injector = NULL,
-            AddressHomeLookup *ahl = NULL);
+            AddressHomeLookup *ahl = NULL,
+            // updated by prajwal
+            int current_PC = 0);
       ~Cache();
 
       Lock& getSetLock(IntPtr addr);

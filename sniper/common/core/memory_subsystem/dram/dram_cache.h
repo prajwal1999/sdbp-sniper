@@ -38,6 +38,9 @@ class DramCache : public DramCntlrInterface
       UInt64 m_hits_prefetch, m_prefetches;
       SubsecondTime m_prefetch_mshr_delay;
 
+      // updated by prajwal
+      int current_PC;
+
       std::pair<bool, SubsecondTime> doAccess(Cache::access_t access, IntPtr address, core_id_t requester, Byte* data_buf, SubsecondTime now, ShmemPerf *perf);
       void insertLine(Cache::access_t access, IntPtr address, core_id_t requester, Byte* data_buf, SubsecondTime now);
       SubsecondTime accessDataArray(Cache::access_t access, core_id_t requester, SubsecondTime t_start, ShmemPerf *perf);

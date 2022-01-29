@@ -60,7 +60,9 @@ class CacheBase
          SRRIP,
          SRRIP_QBS,
          RANDOM,
-         NUM_REPLACEMENT_POLICIES
+         NUM_REPLACEMENT_POLICIES,
+         // updated by prajwal
+         SDBP,
       };
 
    protected:

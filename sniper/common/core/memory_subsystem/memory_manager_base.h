@@ -20,6 +20,10 @@ class MemoryManagerBase
          NUM_CACHING_PROTOCOL_TYPES
       };
 
+   // updated by prajwal
+   int current_PC;
+   void put_current_PC(int PC);
+
    private:
       Core* m_core;
       Network* m_network;

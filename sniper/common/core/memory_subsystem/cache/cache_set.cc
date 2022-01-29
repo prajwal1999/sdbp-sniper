@@ -13,6 +13,9 @@
 #include "config.h"
 #include "config.hpp"
 
+// updated by prajwal
+#include "cache_set_sdbp.h"
+
 CacheSet::CacheSet(CacheBase::cache_t cache_type,
       UInt32 associativity, UInt32 blocksize):
       m_associativity(associativity), m_blocksize(blocksize)
@@ -166,6 +169,10 @@ CacheSet::createCacheSet(String cfgname, core_id_t core_id,
       case CacheBase::RANDOM:
          return new CacheSetRandom(cache_type, associativity, blocksize);
 
+      // updated by prajwal
+      case CacheBase::SDBP:
+         return new CacheSetSDBP(cache_type, associativity, blocksize, dynamic_cast<CacheSetInfoSDBP*>(set_info), getNumQBSAttempts(policy, cfgname, core_id));
+
       default:
          LOG_PRINT_ERROR("Unrecognized Cache Replacement Policy: %i",
                policy);
@@ -185,7 +192,10 @@ CacheSet::createCacheSetInfo(String name, String cfgname, core_id_t core_id, Str
       case CacheBase::LRU_QBS:
       case CacheBase::SRRIP:
       case CacheBase::SRRIP_QBS:
-         return new CacheSetInfoLRU(name, cfgname, core_id, associativity, getNumQBSAttempts(policy, cfgname, core_id));
+         return new CacheSetInfoLRU(name, cfgname, core_id, associativity, getNumQBSAttempts(policy, cfgname, core_id));break;
+      // updated by prajwal
+      case CacheBase::SDBP:
+         return new CacheSetInfoSDBP(name, cfgname, core_id, associativity, getNumQBSAttempts(policy, cfgname, core_id)); break;
       default:
          return NULL;
    }
@@ -227,6 +237,9 @@ CacheSet::parsePolicyType(String policy)
       return CacheBase::SRRIP_QBS;
    if (policy == "random")
       return CacheBase::RANDOM;
+   //updated by prajwal
+   if (policy == "sdbp")
+      return CacheBase::SDBP;
 
    LOG_PRINT_ERROR("Unknown replacement policy %s", policy.c_str());
 }

@@ -227,6 +227,9 @@ Core::logMemoryHit(bool icache, mem_op_t mem_op_type, IntPtr address, MemModeled
 MemoryResult
 Core::readInstructionMemory(IntPtr address, UInt32 instruction_size)
 {
+   // updated by prajwal
+   this->m_memory_manager->put_current_PC(address);
+
    LOG_PRINT("Instruction: Address(0x%x), Size(%u), Start READ",
            address, instruction_size);
 

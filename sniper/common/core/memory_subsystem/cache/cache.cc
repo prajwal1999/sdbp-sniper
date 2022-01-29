@@ -15,7 +15,9 @@ Cache::Cache(
    cache_t cache_type,
    hash_t hash,
    FaultInjector *fault_injector,
-   AddressHomeLookup *ahl)
+   AddressHomeLookup *ahl,
+   //updated by prajwal
+   int current_PC)
 :
    CacheBase(name, num_sets, associativity, cache_block_size, hash, ahl),
    m_enabled(false),
@@ -24,12 +26,18 @@ Cache::Cache(
    m_cache_type(cache_type),
    m_fault_injector(fault_injector)
 {
+   // updated by prajwal
+   this->current_PC = current_PC;
+
    m_set_info = CacheSet::createCacheSetInfo(name, cfgname, core_id, replacement_policy, m_associativity);
    m_sets = new CacheSet*[m_num_sets];
    for (UInt32 i = 0; i < m_num_sets; i++)
    {
       m_sets[i] = CacheSet::createCacheSet(cfgname, core_id, replacement_policy, m_cache_type, m_associativity, m_blocksize, m_set_info);
    }
+
+   // updated by prajwal
+   samp = new sampler(num_sets, associativity); // initialize the sampler hardware
 
    #ifdef ENABLE_SET_USAGE_HIST
    m_set_usage_hist = new UInt64[m_num_sets];
@@ -77,6 +85,9 @@ Cache::invalidateSingleLine(IntPtr addr)
    splitAddress(addr, tag, set_index);
    assert(set_index < m_num_sets);
 
+   // updated by prajwal
+   // invalidate corresponding sampler content 
+
    return m_sets[set_index]->invalidate(tag);
 }
 
@@ -114,6 +125,13 @@ Cache::accessSingleLine(IntPtr addr, access_t access_type,
       // NOTE: assumes error occurs in memory. If we want to model bus errors, insert the error into buff instead
       if (m_fault_injector)
          m_fault_injector->postWrite(addr, set_index * m_associativity + line_index, bytes, (Byte*)m_sets[set_index]->getDataPtr(line_index, block_offset), now);
+   }
+
+   // updated by prajwal
+   if(set_index % samp->sampler_modulus == 0) {
+      // this is a sampler set
+      int set = set_index / samp->sampler_modulus;
+      if (set >=0 && set < samp->nsampler_sets) samp->access(1, set, tag, this->current_PC); 
    }
 
    return cache_block_info;

@@ -6,6 +6,11 @@
 #include "log.h"
 #include "config.hpp"
 
+// updated by prajwal
+void MemoryManagerBase::put_current_PC(int PC){
+   this->current_PC = PC;
+}
+
 MemoryManagerBase*
 MemoryManagerBase::createMMU(String protocol_type,
       Core* core, Network* network, ShmemPerfModel* shmem_perf_model)
