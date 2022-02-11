@@ -85,9 +85,6 @@ Cache::invalidateSingleLine(IntPtr addr)
    splitAddress(addr, tag, set_index);
    assert(set_index < m_num_sets);
 
-   // updated by prajwal
-   // invalidate corresponding sampler content 
-
    return m_sets[set_index]->invalidate(tag);
 }
 
@@ -133,6 +130,10 @@ Cache::accessSingleLine(IntPtr addr, access_t access_type,
       int set = set_index / samp->sampler_modulus;
       if (set >=0 && set < samp->nsampler_sets) samp->access(1, set, tag, this->current_PC); 
    }
+   unsigned int trace = make_trace(1, samp->pred, this->current_PC);
+   set->update_prediction(line_index, samp->pred->get_prediction(1, trace, set_index));
+   // set->update_set_prediction(line_index, samp->pred->get_prediction(1, trace, set_index));
+   // set->sdbp_cache_set[line_index].prediction = samp->pred->get_prediction(tid, trace, set_index);
 
    return cache_block_info;
 }
@@ -149,6 +150,13 @@ Cache::insertSingleLine(IntPtr addr, Byte* fill_buff,
 
    CacheBlockInfo* cache_block_info = CacheBlockInfo::create(m_cache_type);
    cache_block_info->setTag(tag);
+
+   // updated by prajwal
+   // get victim from sdbp and send it to insert function
+   for(unsigned int i=0; i<m_associativity; i++) {
+      // if(m_sets[set_index]->sdbp_cache_set[i])
+   }
+   
 
    m_sets[set_index]->insert(cache_block_info, fill_buff,
          eviction, evict_block_info, evict_buff, cntlr);

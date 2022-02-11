@@ -59,3 +59,7 @@ CacheSetMRU::updateReplacementIndex(UInt32 accessed_index)
    }
    m_lru_bits[accessed_index] = 0;
 }
+
+
+// updated by prajwal
+void CacheSetMRU::update_prediction(UInt32 way, bool pred_val) {}

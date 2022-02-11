@@ -61,6 +61,10 @@ class CacheSet
       virtual void updateReplacementIndex(UInt32) = 0;
 
       bool isValidReplacement(UInt32 index);
+
+      // updated by prajwal
+      void update_set_prediction(UInt32 way, bool pred_val);
+      virtual void update_prediction(UInt32 way, bool pred_val);
 };
 
 #endif /* CACHE_SET_H */

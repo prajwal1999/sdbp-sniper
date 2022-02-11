@@ -83,3 +83,6 @@ CacheSetNRU::updateReplacementIndex(UInt32 accessed_index)
       }
    }
 }
+
+// updated by prajwal
+void CacheSetNRU::update_prediction(UInt32 way, bool pred_val) {}

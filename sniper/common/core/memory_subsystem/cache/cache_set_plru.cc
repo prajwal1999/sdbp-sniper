@@ -113,3 +113,7 @@ CacheSetPLRU::updateReplacementIndex(UInt32 accessed_index)
       LOG_PRINT_ERROR("PLRU doesn't support associativity %d", m_associativity);
    }
 }
+
+
+// updated by prajwal
+void CacheSetPLRU::update_prediction(UInt32 way, bool pred_val) {}

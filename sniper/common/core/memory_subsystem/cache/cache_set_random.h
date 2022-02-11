@@ -12,6 +12,8 @@ class CacheSetRandom : public CacheSet
 
       UInt32 getReplacementIndex(CacheCntlr *cntlr);
       void updateReplacementIndex(UInt32 accessed_index);
+      // updated by prajwal
+      virtual void update_prediction(UInt32 way, bool pred_val);
 
    private:
       Random m_rand;

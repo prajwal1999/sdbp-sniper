@@ -3,6 +3,13 @@
 
 #include "cache_set.h"
 
+typedef struct
+{
+   UInt8 LRUstackposition;
+   bool prediction;
+} LINE_REPLACEMENT_STATE;
+
+
 class CacheSetInfoSDBP : public CacheSetInfo
 {
    public:
@@ -35,10 +42,13 @@ class CacheSetSDBP : public CacheSet
 
       virtual UInt32 getReplacementIndex(CacheCntlr *cntlr);
       void updateReplacementIndex(UInt32 accessed_index);
+      // updated by prajwal
+      virtual void update_prediction(UInt32 way, bool pred_val);
 
    protected:
       const UInt8 m_num_attempts;
-      UInt8* m_sdbp_bits;
+      LINE_REPLACEMENT_STATE *sdbp_cache_set;
+      // UInt8* m_lru_bits;
       CacheSetInfoSDBP* m_set_info;
       void moveToMRU(UInt32 accessed_index);
 };

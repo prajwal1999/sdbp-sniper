@@ -28,3 +28,6 @@ CacheSetRoundRobin::updateReplacementIndex(UInt32 accessed_index)
 {
    return;
 }
+
+// updated by prajwal
+void CacheSetRoundRobin::update_prediction(UInt32 way, bool pred_val) {}

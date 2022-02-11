@@ -2,6 +2,7 @@
 #include <math.h>
 #include <cstring>
 #include "sdb_predictor.h"
+#include <assert.h>
 
 int dan_sampler_assoc = 12;
 int dan_sampler_trace_bits = 16;
@@ -20,16 +21,80 @@ sampler_set::sampler_set (void) {
 }
 
 sampler::sampler(int nsets, int assoc) {
-    
-    nsampler_sets = 1024;
-    sampler_modulus = 6;
+
+    if(nsets == 4096) {
+        dan_sampler_assoc = 13;
+        dan_predictor_index_bits = 14;
+    }
+    int nbits_total = (nsets * assoc * 8 + 1024);
+    int nbits_lru = assoc * nsets * (int) log2 (assoc);
+    int nbits_predictor = dan_counter_width * dan_predictor_tables * dan_predictor_table_entries;
+    int nbits_cache = 1 * nsets * assoc;
+    int nbits_extra = 85;
+    int nbits_left_over = nbits_total - (nbits_predictor + nbits_cache + nbits_lru + nbits_extra);
+    int nbits_one_sampler_set = dan_sampler_assoc * (dan_sampler_tag_bits + 1 + 1 + 4 + dan_sampler_trace_bits);
+    nsampler_sets = nbits_left_over / nbits_one_sampler_set;
+
+    assert(nsampler_sets >= 0);
+
+
+    sampler_modulus = nsets/nsampler_sets;
     pred = new predictor(); // make a new predictor
     sets = new sampler_set[nsampler_sets];
 }
 
 void sampler::access(int tid, int set, int tag, int PC) {
-    // sampler_entry *blocks = &sets[set].blocks[0]; // first sampler entry address in given set.
-    // unsigned int partial_tag = tag & ((1<<dan_sampler_tag_bits)-1);
+    sampler_entry *blocks = &sets[set].blocks[0]; // first sampler entry address in given set.
+    unsigned int partial_tag = tag & ((1<<dan_sampler_tag_bits)-1); // get a partial tag to search for
+    bool miss = false; // assume we do not miss
+    int i; // this will be the way we will hit or replace
+    // search for matching tag
+    for(i=0; i<dan_sampler_assoc; i++) {
+        if(blocks[i].valid && (blocks[i].tag == partial_tag)) {
+            // we know this block is not dead; inform the predictor
+            pred->block_is_dead(tid, blocks[i].trace, false);
+        }
+    }
+
+    // did we find a match ?
+    if(i == dan_sampler_assoc) {
+        // no, so this is a miss in sampler
+        miss = true;
+        // look for invalid block to replace
+        for (i=0; i<dan_sampler_assoc; i++) if(blocks[i].valid == false) break;
+        // no invalid block ? look for deadblock
+        if(i==dan_sampler_assoc) {
+            // find lru dead block
+            for(i=0; i<dan_sampler_assoc; i++) if(blocks[i].prediction) break;
+        }
+        // no invalid or dead block ? use lru block
+        if(i == dan_sampler_assoc) {
+            int j;
+            for(j=0; j<dan_sampler_assoc; j++) {
+                if(blocks[j].lru_stack_position == (unsigned int) (dan_sampler_assoc - 1)) break;
+            }
+            assert(j < dan_sampler_assoc);
+            i = j;
+        }
+
+        // previous trace leads to block being dead; inform the predictor
+        pred->block_is_dead(tid, blocks[i].trace, true);
+        // fill the victim block
+        blocks[i].tag = partial_tag;
+        blocks[i].valid = true;
+    }
+
+    // record the trace
+    blocks[i].trace = make_trace(tid, pred, PC);
+    // get the next prediction for this entry
+    blocks[i].prediction = pred->get_prediction(tid, blocks[i].trace, -1);
+    // now the replaced entry should be moved to the MRU position
+    unsigned int position = blocks[i].lru_stack_position;
+    for(int way=0; way<dan_sampler_assoc; way++) {
+        if(blocks[way].lru_stack_position < position) blocks[way].lru_stack_position++;
+    }
+    blocks[i].lru_stack_position = 0;
+
 }
 
 

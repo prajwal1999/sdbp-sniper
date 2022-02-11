@@ -123,3 +123,6 @@ CacheSetInfoLRU::~CacheSetInfoLRU()
    if (m_attempts)
       delete [] m_attempts;
 }
+
+// updated by prajwal
+void CacheSetLRU::update_prediction(UInt32 way, bool pred_val) {}

@@ -40,6 +40,9 @@ CacheSetRandom::getReplacementIndex(CacheCntlr *cntlr)
    }
 }
 
+// updated by prajwal
+void CacheSetRandom::update_prediction(UInt32 way, bool pred_val) {}
+
 void
 CacheSetRandom::updateReplacementIndex(UInt32 accessed_index)
 {

@@ -104,6 +104,8 @@ CacheSet::insert(CacheBlockInfo* cache_block_info, Byte* fill_buff, bool* evicti
    // This replacement strategy does not take into account the fact that
    // cache blocks can be voluntarily flushed or invalidated due to another write request
    const UInt32 index = getReplacementIndex(cntlr);
+
+ 
    assert(index < m_associativity);
 
    assert(eviction != NULL);
@@ -127,6 +129,12 @@ CacheSet::insert(CacheBlockInfo* cache_block_info, Byte* fill_buff, bool* evicti
    if (fill_buff != NULL && m_blocks != NULL)
       memcpy(&m_blocks[index * m_blocksize], (void*) fill_buff, m_blocksize);
 }
+
+// updated by prajwal
+// void CacheSet::update_set_prediction(UInt32 way, bool pred_val) {
+//    update_prediction(way, pred_val);
+// }
+
 
 char*
 CacheSet::getDataPtr(UInt32 line_index, UInt32 offset)

@@ -11,14 +11,18 @@ CacheSetSDBP::CacheSetSDBP(
    , m_num_attempts(num_attempts)
    , m_set_info(set_info)
 {
-   m_sdbp_bits = new UInt8[m_associativity];
+   // m_lru_bits = new UInt8[m_associativity];
+   // updated by prajwal
+   sdbp_cache_set = new LINE_REPLACEMENT_STATE [m_associativity];
    for (UInt32 i = 0; i < m_associativity; i++)
-      m_sdbp_bits[i] = i;
+      // m_lru_bits[i] = i;
+      sdbp_cache_set[i].LRUstackposition = i;
 }
 
 CacheSetSDBP::~CacheSetSDBP()
 {
-   delete [] m_sdbp_bits;
+   // delete [] m_lru_bits;
+   delete [] sdbp_cache_set;
 }
 
 UInt32
@@ -42,10 +46,10 @@ CacheSetSDBP::getReplacementIndex(CacheCntlr *cntlr)
       UInt8 max_bits = 0;
       for (UInt32 i = 0; i < m_associativity; i++)
       {
-         if (m_sdbp_bits[i] > max_bits && isValidReplacement(i))
+         if (sdbp_cache_set[i].LRUstackposition > max_bits && isValidReplacement(i))
          {
             index = i;
-            max_bits = m_sdbp_bits[i];
+            max_bits = sdbp_cache_set[i].LRUstackposition;
          }
       }
       LOG_ASSERT_ERROR(index < m_associativity, "Error Finding SDBP bits");
@@ -80,7 +84,7 @@ CacheSetSDBP::getReplacementIndex(CacheCntlr *cntlr)
 void
 CacheSetSDBP::updateReplacementIndex(UInt32 accessed_index)
 {
-   m_set_info->increment(m_sdbp_bits[accessed_index]);
+   m_set_info->increment(sdbp_cache_set[accessed_index].LRUstackposition);
    moveToMRU(accessed_index);
 }
 
@@ -89,10 +93,16 @@ CacheSetSDBP::moveToMRU(UInt32 accessed_index)
 {
    for (UInt32 i = 0; i < m_associativity; i++)
    {
-      if (m_sdbp_bits[i] < m_sdbp_bits[accessed_index])
-         m_sdbp_bits[i] ++;
+      if (sdbp_cache_set[i].LRUstackposition < sdbp_cache_set[accessed_index].LRUstackposition)
+         sdbp_cache_set[i].LRUstackposition ++;
    }
-   m_sdbp_bits[accessed_index] = 0;
+   sdbp_cache_set[accessed_index].LRUstackposition = 0;
+}
+
+// updated by prajwal
+void CacheSetSDBP::update_prediction(UInt32 way, bool pred_val)
+{
+   sdbp_cache_set[way].prediction = pred_val;
 }
 
 CacheSetInfoSDBP::CacheSetInfoSDBP(String name, String cfgname, core_id_t core_id, UInt32 associativity, UInt8 num_attempts)
